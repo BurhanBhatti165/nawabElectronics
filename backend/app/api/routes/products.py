@@ -26,12 +26,17 @@ def list_products(
     sort_by: Optional[str] = Query(default="newest"),
     limit: Optional[int] = Query(default=None),
     offset: Optional[int] = Query(default=0),
+    include_inactive: bool = Query(default=False),
 ):
     supabase = get_supabase_admin()
     # Query the view which adds effective_price = COALESCE(discount_price, price)
     query = supabase.table("products_with_effective_price").select(
-        "id,name,description,specifications,price,discount_price,effective_price,stock,images,category_id,brand_id,is_featured,created_at,ac_type,refrigerator_type,cubic_feet,cooling_type,technology,color,capacity,weight,categories(id,name,description),brands(id,name,logo,created_at)"
+        "id,name,description,specifications,price,discount_price,effective_price,stock,images,category_id,brand_id,is_featured,is_active,created_at,ac_type,refrigerator_type,cubic_feet,cooling_type,technology,color,capacity,weight,categories(id,name,description),brands(id,name,logo,created_at)"
     )
+    
+    # Filter for active products by default
+    if not include_inactive:
+        query = query.eq("is_active", True)
     if search:
         query = query.ilike("name", f"%{search.strip()}%")
     if category_id:
@@ -121,7 +126,7 @@ def get_product(product_id: str):
     result = (
         supabase.table("products")
         .select(
-            "id,name,description,specifications,price,discount_price,stock,images,category_id,brand_id,is_featured,created_at,ac_type,refrigerator_type,cubic_feet,cooling_type,technology,color,capacity,weight,categories(id,name,description),brands(id,name,logo,created_at)"
+            "id,name,description,specifications,price,discount_price,stock,images,category_id,brand_id,is_featured,is_active,created_at,ac_type,refrigerator_type,cubic_feet,cooling_type,technology,color,capacity,weight,categories(id,name,description),brands(id,name,logo,created_at)"
         )
         .eq("id", product_id)
         .limit(1)
@@ -149,7 +154,8 @@ def update_product(product_id: str, payload: ProductIn, _: str = Depends(require
 @router.delete("/{product_id}")
 def delete_product(product_id: str, _: str = Depends(require_manager_or_admin)):
     supabase = get_supabase_admin()
-    result = supabase.table("products").delete().eq("id", product_id).execute()
+    # Soft delete: just set is_active to false
+    result = supabase.table("products").update({"is_active": False}).eq("id", product_id).execute()
     if not result.data:
-        raise HTTPException(status_code=404, detail="Product not found")
-    return {"message": "Product deleted successfully"}
+        raise HTTPException(status_code=404, detail="Product not found or already inactive")
+    return {"message": "Product deactivated successfully"}

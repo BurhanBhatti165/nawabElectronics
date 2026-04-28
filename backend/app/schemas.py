@@ -14,6 +14,7 @@ class ProductIn(BaseModel):
     brandId: str
     images: Optional[str] = "[]"
     isFeatured: bool = False
+    is_active: bool = True
     # Filter fields
     ac_type: Optional[str] = ""
     refrigerator_type: Optional[str] = ""
