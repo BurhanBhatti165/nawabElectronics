@@ -1,10 +1,15 @@
+import bcrypt
 from fastapi import APIRouter, HTTPException
 from app.services.supabase_client import get_supabase_admin
 from pydantic import BaseModel
-from passlib.context import CryptContext
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+def verify_password(password: str, hashed_pw: str) -> bool:
+    return bcrypt.checkpw(password.encode('utf-8'), hashed_pw.encode('utf-8'))
 
 class LoginRequest(BaseModel):
     email: str
@@ -33,7 +38,7 @@ def login(payload: LoginRequest):
     if not hashed_pw:
          raise HTTPException(status_code=400, detail="Account does not have a password set. Contact admin.")
 
-    if not pwd_context.verify(payload.password, hashed_pw):
+    if not verify_password(payload.password, hashed_pw):
         raise HTTPException(status_code=401, detail="Incorrect password")
     
     # Don't return the password
@@ -51,7 +56,7 @@ def register(payload: RegisterRequest):
         raise HTTPException(status_code=400, detail="User already registered")
     
     body = payload.model_dump()
-    body["password"] = pwd_context.hash(payload.password)
+    body["password"] = hash_password(payload.password)
     body["role"] = "customer"
     
     result = supabase.table("users").insert(body).execute()

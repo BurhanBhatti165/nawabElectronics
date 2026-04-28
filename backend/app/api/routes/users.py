@@ -3,7 +3,7 @@ from app.schemas import ManagerIn
 from app.services.supabase_client import get_supabase_admin
 from app.core.auth import require_admin
 
-from app.api.routes.auth import pwd_context
+from app.api.routes.auth import hash_password
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -27,7 +27,7 @@ def create_manager(payload: ManagerIn, _: str = Depends(require_admin)):
     body = payload.model_dump()
     body["email"] = body["email"].strip().lower()
     body["role"] = "manager"
-    body["password"] = pwd_context.hash(body["password"])
+    body["password"] = hash_password(body["password"])
     result = supabase.table("users").insert(body).execute()
     if not result.data:
         raise HTTPException(status_code=500, detail="Failed to create manager")
