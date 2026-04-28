@@ -22,6 +22,7 @@ export default function ShopPage() {
   const [loadedImages, setLoadedImages] = useState({});
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(0);
+  const [showFilters, setShowFilters] = useState(false);
 
   // Filters
   const [query, setQuery] = useState(searchParams.get("search") || "");
@@ -61,7 +62,7 @@ export default function ShopPage() {
   // Toast auto-dismiss
   useEffect(() => {
     if (!toastMessage) return;
-    const timer = setTimeout(() => setToastMessage(""), 1800);
+    const timer = setTimeout(() => setToastMessage(""), 2000);
     return () => clearTimeout(timer);
   }, [toastMessage]);
 
@@ -165,19 +166,145 @@ export default function ShopPage() {
                 <option value="discount">Best Discount</option>
               </select>
             </label>
+            <button className="btn btn-outline mobile-filter-btn" onClick={() => setShowFilters(true)}>
+              🔍 Filters
+            </button>
             {hasFilters && (
               <button className="btn btn-outline" style={{ fontSize: "0.85rem" }} onClick={clearAll}>
-                ✕ Clear All Filters
+                ✕ Clear
               </button>
             )}
           </div>
         </div>
       </div>
 
-      <div className="shop-layout" style={{ display: "grid", gridTemplateColumns: "1fr 290px", gap: "2rem", alignItems: "start" }}>
-        {/* Left: Products Grid */}
+      <div className="shop-layout">
+        {/* Filters Sidebar */}
+        <aside className={`shop-filters card ${showFilters ? "open" : ""}`}>
+          <div className="filters-header mobile-only">
+            <h3 style={{ margin: 0 }}>Filters</h3>
+            <button className="close-filters" onClick={() => setShowFilters(false)}>✕</button>
+          </div>
+          <div className="filters-scroll">
+            {/* Search */}
+            <FilterGroup label="Keyword Search">
+              <input className="input" placeholder="e.g. Inverter AC..." value={query} onChange={(e) => { setQuery(e.target.value); setPage(0); }} />
+            </FilterGroup>
+
+            {/* In Stock Toggle */}
+            <FilterGroup label="Availability">
+              <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
+                <input type="checkbox" checked={inStock} onChange={(e) => { setInStock(e.target.checked); setPage(0); }} style={{ width: "1.1rem", height: "1.1rem" }} />
+                <span>In Stock Only</span>
+              </label>
+            </FilterGroup>
+
+            {/* Category */}
+            <FilterGroup label="Category">
+              <select className="select" value={categoryId} onChange={(e) => { setCategoryId(e.target.value); setPage(0); }}>
+                <option value="">All Categories</option>
+                {categories.map((c) => <option value={c.id} key={c.id}>{c.name}</option>)}
+              </select>
+            </FilterGroup>
+
+            {/* Brand */}
+            <FilterGroup label="Brand">
+              <select className="select" value={brandId} onChange={(e) => { setBrandId(e.target.value); setPage(0); }}>
+                <option value="">All Brands</option>
+                {brands.map((b) => <option value={b.id} key={b.id}>{b.name}</option>)}
+              </select>
+            </FilterGroup>
+
+            {/* Price Range */}
+            <FilterGroup label="Price Range (PKR)">
+              <div className="row" style={{ gap: "0.5rem" }}>
+                <input className="input" type="number" placeholder="Min" value={minPrice} onChange={(e) => { setMinPrice(e.target.value); setPage(0); }} />
+                <input className="input" type="number" placeholder="Max" value={maxPrice} onChange={(e) => { setMaxPrice(e.target.value); setPage(0); }} />
+              </div>
+            </FilterGroup>
+
+            {/* AC Type */}
+            <FilterGroup label="AC Type">
+              <select className="select" value={acType} onChange={(e) => { setAcType(e.target.value); setPage(0); }}>
+                <option value="">All Types</option>
+                <option value="Ceiling Cassette">Ceiling Cassette</option>
+                <option value="Floor Standing">Floor Standing</option>
+                <option value="Wall Mounted Split Ac">Wall Mounted Split Ac</option>
+              </select>
+            </FilterGroup>
+
+            {/* Refrigerator Type */}
+            <FilterGroup label="Refrigerator Type">
+              <select className="select" value={refrigeratorType} onChange={(e) => { setRefrigeratorType(e.target.value); setPage(0); }}>
+                <option value="">All Types</option>
+                <option value="Bedroom Size">Bedroom Size</option>
+                <option value="Top Mount">Top Mount</option>
+                <option value="Double Door">Double Door</option>
+              </select>
+            </FilterGroup>
+
+            {/* Cubic Feet */}
+            <FilterGroup label="Cubic Feet">
+              <select className="select" value={cubicFeet} onChange={(e) => { setCubicFeet(e.target.value); setPage(0); }}>
+                <option value="">All Sizes</option>
+                {["4-CFT","6-CFT","7-CFT","8-CFT","9-CFT","11-CFT","11.5 CFT","12-CFT","13-CFT","14-CFT","14.5-CFT","15-CFT","15.5-CFT","16-CFT","18-CFT","20-CFT"].map((v) => <option key={v} value={v}>{v}</option>)}
+              </select>
+            </FilterGroup>
+
+            {/* Cooling Type */}
+            <FilterGroup label="Cooling Type">
+              <select className="select" value={coolingType} onChange={(e) => { setCoolingType(e.target.value); setPage(0); }}>
+                <option value="">All</option>
+                <option value="Cool Only">Cool Only</option>
+                <option value="Heat And Cool">Heat And Cool</option>
+              </select>
+            </FilterGroup>
+
+            {/* Technology */}
+            <FilterGroup label="Technology">
+              <select className="select" value={technology} onChange={(e) => { setTechnology(e.target.value); setPage(0); }}>
+                <option value="">All</option>
+                {["Electric","Electric + Gas","Fully Automatic","Gas Only","Instant","Inverter","Non Inverter"].map((v) => <option key={v} value={v}>{v}</option>)}
+              </select>
+            </FilterGroup>
+
+            {/* Color */}
+            <FilterGroup label="Color">
+              <select className="select" value={color} onChange={(e) => { setColor(e.target.value); setPage(0); }}>
+                <option value="">All Colors</option>
+                {["Beige","Black","CHAMPAGNE","Charcoal Grey","Glass","Golden","Grey","Maroon","Metallic Golden Brown","Mirror Glass","Purple Blaze","Red","Red Blaze","Silver","White"].map((v) => <option key={v} value={v}>{v}</option>)}
+              </select>
+            </FilterGroup>
+
+            {/* Capacity */}
+            <FilterGroup label="Capacity">
+              <select className="select" value={capacity} onChange={(e) => { setCapacity(e.target.value); setPage(0); }}>
+                <option value="">All Capacities</option>
+                {["1 Ton(12000BTU)","1.5 Ton(18000BTU)","2 Ton(24000 BTU)","3 Ton (36000BTU)","4 Ton(48000BTU)","4.9 Liters","5 Liters","6 Liters","8 Liters","8 Kgs","8 Gallon","9 Kgs","9 Liters","10 KH","10 Liters","12-Gallon","12 Liters","15 Gallon","16 KG","20 Liters","23 Liters","35-GLN","55-GLN","60 Liters","70 Liters","75 Liters"].map((v) => <option key={v} value={v}>{v}</option>)}
+              </select>
+            </FilterGroup>
+
+            {/* Weight */}
+            <FilterGroup label="Weight">
+              <select className="select" value={weight} onChange={(e) => { setWeight(e.target.value); setPage(0); }}>
+                <option value="">All Weights</option>
+                {["21 KG","25 KG","40 KG","50 KG","70 KG"].map((v) => <option key={v} value={v}>{v}</option>)}
+              </select>
+            </FilterGroup>
+
+            <button
+              className="btn btn-outline"
+              style={{ width: "100%", marginTop: "0.5rem" }}
+              onClick={clearAll}
+            >
+              Clear All Filters
+            </button>
+          </div>
+        </aside>
+
+        {/* Products Grid */}
         <div className="shop-products">
-          <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(230px, 1fr))" }}>
+          <div className="grid products-grid">
             {loading
               ? Array.from({ length: 8 }).map((_, idx) => (
                   <div className="card product-card product-skeleton" key={`skeleton-${idx}`}>
@@ -282,141 +409,6 @@ export default function ShopPage() {
           )}
         </div>
 
-        {/* Right: Filters Sidebar — scrollable */}
-        <aside
-          className="shop-filters card"
-          style={{
-            position: "sticky",
-            top: "100px",
-            padding: "1.5rem",
-            maxHeight: "calc(100vh - 130px)",
-            overflowY: "auto",
-            overflowX: "hidden",
-          }}
-        >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem", borderBottom: "1px solid #eee", paddingBottom: "0.75rem" }}>
-            <h3 style={{ margin: 0 }}>Filters</h3>
-            {hasFilters && (
-              <button onClick={clearAll} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--accent)", fontWeight: 600, fontSize: "0.85rem" }}>
-                Clear All
-              </button>
-            )}
-          </div>
-
-          {/* Search */}
-          <FilterGroup label="Keyword Search">
-            <input className="input" placeholder="e.g. Inverter AC..." value={query} onChange={(e) => { setQuery(e.target.value); setPage(0); }} />
-          </FilterGroup>
-
-          {/* In Stock Toggle */}
-          <FilterGroup label="Availability">
-            <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
-              <input type="checkbox" checked={inStock} onChange={(e) => { setInStock(e.target.checked); setPage(0); }} style={{ width: "1.1rem", height: "1.1rem" }} />
-              <span>In Stock Only</span>
-            </label>
-          </FilterGroup>
-
-          {/* Category */}
-          <FilterGroup label="Category">
-            <select className="select" value={categoryId} onChange={(e) => { setCategoryId(e.target.value); setPage(0); }}>
-              <option value="">All Categories</option>
-              {categories.map((c) => <option value={c.id} key={c.id}>{c.name}</option>)}
-            </select>
-          </FilterGroup>
-
-          {/* Brand */}
-          <FilterGroup label="Brand">
-            <select className="select" value={brandId} onChange={(e) => { setBrandId(e.target.value); setPage(0); }}>
-              <option value="">All Brands</option>
-              {brands.map((b) => <option value={b.id} key={b.id}>{b.name}</option>)}
-            </select>
-          </FilterGroup>
-
-          {/* Price Range */}
-          <FilterGroup label="Price Range (PKR)">
-            <div className="row" style={{ gap: "0.5rem" }}>
-              <input className="input" type="number" placeholder="Min" value={minPrice} onChange={(e) => { setMinPrice(e.target.value); setPage(0); }} />
-              <input className="input" type="number" placeholder="Max" value={maxPrice} onChange={(e) => { setMaxPrice(e.target.value); setPage(0); }} />
-            </div>
-          </FilterGroup>
-
-          {/* AC Type */}
-          <FilterGroup label="AC Type">
-            <select className="select" value={acType} onChange={(e) => { setAcType(e.target.value); setPage(0); }}>
-              <option value="">All Types</option>
-              <option value="Ceiling Cassette">Ceiling Cassette</option>
-              <option value="Floor Standing">Floor Standing</option>
-              <option value="Wall Mounted Split Ac">Wall Mounted Split Ac</option>
-            </select>
-          </FilterGroup>
-
-          {/* Refrigerator Type */}
-          <FilterGroup label="Refrigerator Type">
-            <select className="select" value={refrigeratorType} onChange={(e) => { setRefrigeratorType(e.target.value); setPage(0); }}>
-              <option value="">All Types</option>
-              <option value="Bedroom Size">Bedroom Size</option>
-              <option value="Top Mount">Top Mount</option>
-              <option value="Double Door">Double Door</option>
-            </select>
-          </FilterGroup>
-
-          {/* Cubic Feet */}
-          <FilterGroup label="Cubic Feet">
-            <select className="select" value={cubicFeet} onChange={(e) => { setCubicFeet(e.target.value); setPage(0); }}>
-              <option value="">All Sizes</option>
-              {["4-CFT","6-CFT","7-CFT","8-CFT","9-CFT","11-CFT","11.5 CFT","12-CFT","13-CFT","14-CFT","14.5-CFT","15-CFT","15.5-CFT","16-CFT","18-CFT","20-CFT"].map((v) => <option key={v} value={v}>{v}</option>)}
-            </select>
-          </FilterGroup>
-
-          {/* Cooling Type */}
-          <FilterGroup label="Cooling Type">
-            <select className="select" value={coolingType} onChange={(e) => { setCoolingType(e.target.value); setPage(0); }}>
-              <option value="">All</option>
-              <option value="Cool Only">Cool Only</option>
-              <option value="Heat And Cool">Heat And Cool</option>
-            </select>
-          </FilterGroup>
-
-          {/* Technology */}
-          <FilterGroup label="Technology">
-            <select className="select" value={technology} onChange={(e) => { setTechnology(e.target.value); setPage(0); }}>
-              <option value="">All</option>
-              {["Electric","Electric + Gas","Fully Automatic","Gas Only","Instant","Inverter","Non Inverter"].map((v) => <option key={v} value={v}>{v}</option>)}
-            </select>
-          </FilterGroup>
-
-          {/* Color */}
-          <FilterGroup label="Color">
-            <select className="select" value={color} onChange={(e) => { setColor(e.target.value); setPage(0); }}>
-              <option value="">All Colors</option>
-              {["Beige","Black","CHAMPAGNE","Charcoal Grey","Glass","Golden","Grey","Maroon","Metallic Golden Brown","Mirror Glass","Purple Blaze","Red","Red Blaze","Silver","White"].map((v) => <option key={v} value={v}>{v}</option>)}
-            </select>
-          </FilterGroup>
-
-          {/* Capacity */}
-          <FilterGroup label="Capacity">
-            <select className="select" value={capacity} onChange={(e) => { setCapacity(e.target.value); setPage(0); }}>
-              <option value="">All Capacities</option>
-              {["1 Ton(12000BTU)","1.5 Ton(18000BTU)","2 Ton(24000 BTU)","3 Ton (36000BTU)","4 Ton(48000BTU)","4.9 Liters","5 Liters","6 Liters","8 Liters","8 Kgs","8 Gallon","9 Kgs","9 Liters","10 KH","10 Liters","12-Gallon","12 Liters","15 Gallon","16 KG","20 Liters","23 Liters","35-GLN","55-GLN","60 Liters","70 Liters","75 Liters"].map((v) => <option key={v} value={v}>{v}</option>)}
-            </select>
-          </FilterGroup>
-
-          {/* Weight */}
-          <FilterGroup label="Weight">
-            <select className="select" value={weight} onChange={(e) => { setWeight(e.target.value); setPage(0); }}>
-              <option value="">All Weights</option>
-              {["21 KG","25 KG","40 KG","50 KG","70 KG"].map((v) => <option key={v} value={v}>{v}</option>)}
-            </select>
-          </FilterGroup>
-
-          <button
-            className="btn btn-outline"
-            style={{ width: "100%", marginTop: "0.5rem" }}
-            onClick={clearAll}
-          >
-            Clear All Filters
-          </button>
-        </aside>
       </div>
 
       <div className={`cart-toast ${toastMessage ? "show" : ""}`}>{toastMessage}</div>

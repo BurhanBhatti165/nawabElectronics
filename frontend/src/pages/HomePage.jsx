@@ -67,7 +67,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!toastMessage) return;
-    const timer = setTimeout(() => setToastMessage(""), 1800);
+    const timer = setTimeout(() => setToastMessage(""), 2000);
     return () => clearTimeout(timer);
   }, [toastMessage]);
 
