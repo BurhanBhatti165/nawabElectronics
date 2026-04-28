@@ -6,3 +6,5 @@ pydantic-settings
 cloudinary
 python-multipart
 fastapi-mail
+passlib[bcrypt]
+bcrypt
