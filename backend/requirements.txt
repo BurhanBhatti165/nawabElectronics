@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+supabase
+pydantic-settings
+cloudinary
+python-multipart
+fastapi-mail
